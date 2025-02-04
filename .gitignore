@@ -1,0 +1,124 @@
+# ----------------------------------------
+# General Python
+# ----------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+*.swp
+*.swo
+*.bak
+
+# Byte-compiled / optimized / DLL files
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+.env/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Poetry virtual environments
+.poetry/
+poetry.lock
+
+# Jupyter Notebooks checkpoints
+.ipynb_checkpoints
+
+# ----------------------------------------
+# Logs & Debugging
+# ----------------------------------------
+*.log
+*.out
+*.err
+nohup.out
+debug.log
+*.bak
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# ----------------------------------------
+# System & Editor-Specific
+# ----------------------------------------
+.DS_Store
+*.orig
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+*.tmproj
+Thumbs.db
+
+# ----------------------------------------
+# Audio Files
+# ----------------------------------------
+*.wav
+*.mp3
+*.flac
+*.ogg
+
+# ----------------------------------------
+# Transcription Outputs
+# ----------------------------------------
+*.json
+*.txt
+
+# ----------------------------------------
+# Google Cloud Credentials (Sensitive)
+# ----------------------------------------
+GOOGLE_APPLICATION_CREDENTIALS
+*.json
+google-cloud-key.json
+
+# ----------------------------------------
+# Build / Dist / Packaging
+# ----------------------------------------
+build/
+dist/
+*.egg-info/
+*.egg
+MANIFEST
+
+# ----------------------------------------
+# PyQt Specific
+# ----------------------------------------
+*.pyqtdeploy/
+*.qmake.stash
+*.qmake.cache
+*.qmake.conf
+*.pro.user*
+*.moc
+*.qrc
+
+# ----------------------------------------
+# Unit Testing
+# ----------------------------------------
+.coverage
+.tox/
+nosetests.xml
+test-results.xml
+pytest_cache/
+*.cover
+*.hypothesis/
+
+# ----------------------------------------
+# Temporary Files / Misc
+# ----------------------------------------
+tmp/
+*.tmp
+temp/
+*.temp
+
+# ----------------------------------------
+# Custom
+# ----------------------------------------
+sa_key.json
+secrets/
+context.py
+context.txt
