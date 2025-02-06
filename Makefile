@@ -1,13 +1,13 @@
 .PHONY: install run lint test
 
 install:
-\tpoetry install
+	poetry install
 
 run:
-\tpoetry run python -m my_audio_app.main
+	poetry run python -m main
 
 lint:
-\tpoetry run flake8 my_audio_app
+	poetry run flake8 main
 
 test:
-\tpoetry run pytest -v
+	poetry run pytest -v

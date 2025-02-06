@@ -1,18 +1,19 @@
-import sys
 import time
 from datetime import timedelta
 import threading
+
 
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QLabel, QPushButton,
     QVBoxLayout, QHBoxLayout, QComboBox, QTextEdit
 )
 from PyQt5.QtCore import QTimer, Qt
+from PyQt5.QtWidgets import QMessageBox
 
 import pyaudio
 
-from .audio_recorder import AudioRecorder
-from .transcriber import GoogleCloudTranscriber
+from audio_recorder import AudioRecorder
+from transcriber import TranscriberWorker
 
 
 class MainWindow(QMainWindow):
@@ -193,3 +194,25 @@ class MainWindow(QMainWindow):
             self.transcription_text.setPlainText(transcript)
         except Exception as e:
             self.transcription_text.setPlainText(f"Error during transcription: {e}")
+
+    def perform_transcription(self):
+            """
+            Create a transcriber worker so that we don't block the UI while
+            the Google API processes the audio.
+            """
+            self.transcription_worker = TranscriberWorker(
+                wav_file=self.wav_filename,
+                sample_rate=44100,
+                language_code="en-US",
+                enable_diarization=True,
+                speaker_count=2
+            )
+            self.transcription_worker.transcription_finished.connect(self.handle_transcription_finished)
+            self.transcription_worker.error_signal.connect(self.handle_transcription_error)
+            self.transcription_worker.start()
+
+    def handle_transcription_finished(self, transcript):
+        self.transcription_text.setPlainText(transcript)
+
+    def handle_transcription_error(self, error_msg):
+        QMessageBox.critical(self, "Transcription Error", f"Error: {error_msg}")

@@ -1,57 +1,59 @@
 import os
-from dotenv import load_dotenv
+import logging
+from PyQt5.QtCore import QThread, pyqtSignal
 from google.cloud import speech
 
-load_dotenv()  # Load environment variables from .env
+logger = logging.getLogger(__name__)
 
-GOOGLE_CREDENTIALS_PATH = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-SAMPLE_RATE = int(os.getenv("AUDIO_SAMPLE_RATE", 44100))
-DIARIZATION_ENABLED = os.getenv("ENABLE_DIARIZATION", "False").lower() == "true"
-SPEAKER_COUNT = int(os.getenv("DIARIZATION_SPEAKER_COUNT", 2))
-LANGUAGE_CODE = os.getenv("LANGUAGE_CODE", "en-US")
+class TranscriberWorker(QThread):
+    # Signals that can be received in the UI thread
+    transcription_finished = pyqtSignal(str)
+    error_signal = pyqtSignal(str)
 
+    def __init__(self, wav_file, sample_rate=44100, language_code="en-US",
+                 enable_diarization=False, speaker_count=2, parent=None):
+        super().__init__(parent)
+        self.wav_file = wav_file
+        self.sample_rate = sample_rate
+        self.language_code = language_code
+        self.enable_diarization = enable_diarization
+        self.speaker_count = speaker_count
 
+    def run(self):
+        try:
+            transcript = self._transcribe()
+            self.transcription_finished.emit(transcript)
+        except Exception as e:
+            logger.error("Transcription error: %s", e)
+            self.error_signal.emit(str(e))
 
-class GoogleCloudTranscriber:
-    def __init__(self):
-        # In practice, you'd configure environment variables or pass
-        # the path to the service account JSON here.
-        pass
-
-    def transcribe(self, wav_file, sample_rate=44100, language_code="en-US",
-                   enable_diarization=False, speaker_count=2):
-        """
-        Transcribe a WAV file using Google Cloud Speech-to-Text.
-        Optionally enable speaker diarization.
-        """
+    def _transcribe(self):
         client = speech.SpeechClient()
 
-        with open(wav_file, 'rb') as f:
+        with open(self.wav_file, 'rb') as f:
             content = f.read()
 
         audio = speech.RecognitionAudio(content=content)
         config = speech.RecognitionConfig(
             encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-            sample_rate_hertz=sample_rate,
-            language_code=language_code,
-            enable_speaker_diarization=enable_diarization,
-            diarization_speaker_count=speaker_count
+            sample_rate_hertz=self.sample_rate,
+            language_code=self.language_code,
+            enable_speaker_diarization=self.enable_diarization,
+            diarization_speaker_count=self.speaker_count
         )
 
+        logger.info("Starting Google Cloud transcription for %s", self.wav_file)
         operation = client.long_running_recognize(config=config, audio=audio)
-        response = operation.result(timeout=300)  # Wait up to 5 minutes
+        response = operation.result(timeout=300)
+        logger.info("Transcription finished for %s", self.wav_file)
 
         transcript_text = ""
         for result in response.results:
-            # We only look at the first alternative for brevity
             alternative = result.alternatives[0]
-            if enable_diarization:
-                # Word-level info with speaker tags
+            if self.enable_diarization:
                 for word in alternative.words:
-                    speaker_tag = word.speaker_tag
-                    transcript_text += f"Speaker {speaker_tag}: {word.word} "
+                    transcript_text += f"Speaker {word.speaker_tag}: {word.word} "
             else:
-                # No speaker diarization
                 transcript_text += alternative.transcript + "\n"
 
         return transcript_text
